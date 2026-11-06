@@ -123,7 +123,18 @@ export default function App() {
     };
   }, [activeCycle, entries]);
 
-  // Actions: Person selection and addition
+  // Actions: Customize app/station name
+  const handleRenameApp = async (newName: string) => {
+    if (!settings) return;
+    const trimmed = newName.trim();
+    if (!trimmed) return;
+    const updated = { ...settings, appName: trimmed };
+    setSettings(updated);
+    await storage.saveSettings(updated);
+    showToast(`Station renamed to "${trimmed}"`);
+  };
+
+  // Actions: Person selection, addition, and renaming
   const handleSelectPerson = async (person: string) => {
     if (!settings) return;
     const updated = { ...settings, lastSelectedPerson: person };
@@ -146,6 +157,31 @@ export default function App() {
     await storage.saveSettings(updated);
     showToast(`Added ${newPerson} to household members.`);
     triggerVibrate(20);
+  };
+
+  const handleRenamePerson = async (oldName: string, newName: string) => {
+    if (!settings) return;
+    const trimmed = newName.trim();
+    if (!trimmed || trimmed === oldName) return;
+    const updatedList = settings.savedPeople.map((p) => (p === oldName ? trimmed : p));
+    const newLast = settings.lastSelectedPerson === oldName ? trimmed : settings.lastSelectedPerson;
+    const updated = {
+      ...settings,
+      savedPeople: updatedList,
+      lastSelectedPerson: newLast,
+    };
+    setSettings(updated);
+    await storage.saveSettings(updated);
+
+    // Update entries
+    const updatedEntries = entries.map((e) =>
+      e.person === oldName ? { ...e, person: trimmed } : e
+    );
+    setEntries(updatedEntries);
+    await storage.saveEntries(updatedEntries);
+
+    showToast(`Renamed ${oldName} to ${trimmed} across records!`);
+    triggerVibrate(25);
   };
 
   // Actions: Log volume (with person name)
@@ -371,8 +407,10 @@ export default function App() {
       <div className="w-full max-w-[430px]">
         {/* Header */}
         <Header
+          appName={settings.appName || 'FilterTap'}
           currentLiters={currentLiters}
           targetLiters={activeCycle?.targetLiters || 1500}
+          onRenameApp={handleRenameApp}
           onOpenInstallModal={() => setIsInstallModalOpen(true)}
           onOpenApkModal={() => setIsApkModalOpen(true)}
         />
@@ -399,6 +437,7 @@ export default function App() {
                   selectedPerson={settings.lastSelectedPerson}
                   onSelectPerson={handleSelectPerson}
                   onAddPerson={handleAddPerson}
+                  onRenamePerson={handleRenamePerson}
                   onLogVolume={handleLogVolume}
                   onUndoLastTap={handleUndoLastTap}
                   onOpenResetModal={() => setIsResetModalOpen(true)}

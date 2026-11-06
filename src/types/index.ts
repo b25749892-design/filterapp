@@ -22,6 +22,7 @@ export interface FilterCycle {
 }
 
 export interface AppSettings {
+  appName: string; // Customizable title / filter station name (e.g. "FilterTap", "Kitchen Brita", "Office RO")
   activeCycleId: string;
   defaultTargetLiters: number;
   quickAmounts: number[];

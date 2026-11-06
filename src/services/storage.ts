@@ -22,6 +22,7 @@ export const CANONICAL_ANDROID_SIGNING = {
 };
 
 const DEFAULT_SETTINGS: AppSettings = {
+  appName: 'FilterTap',
   activeCycleId: 'initial-cycle',
   defaultTargetLiters: 1500,
   quickAmounts: [1, 2, 5, 10],

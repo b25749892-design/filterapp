@@ -1,5 +1,5 @@
-import React from 'react';
-import { Smartphone, Download, X, CheckCircle2, Terminal, Package, Sparkles } from 'lucide-react';
+import React, { useState } from 'react';
+import { Smartphone, Download, X, Copy, Check, GitBranch, Package, Terminal, FileCode2 } from 'lucide-react';
 
 interface AndroidApkModalProps {
   isOpen: boolean;
@@ -12,6 +12,9 @@ export const AndroidApkModal: React.FC<AndroidApkModalProps> = ({
   onClose,
   onShowToast,
 }) => {
+  const [copiedScript, setCopiedScript] = useState(false);
+  const [copiedGitCmd, setCopiedGitCmd] = useState(false);
+
   if (!isOpen) return null;
 
   const handleDownloadZip = () => {
@@ -24,6 +27,20 @@ export const AndroidApkModal: React.FC<AndroidApkModalProps> = ({
     onShowToast('Downloading FilterTap Android APK Project (.zip)!');
   };
 
+  const gitPushCmd = `git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git\ngit branch -M main\ngit push -u origin main`;
+  const helperScriptCmd = `./scripts/push-to-github.sh https://github.com/YOUR_USERNAME/YOUR_REPO.git`;
+
+  const copyToClipboard = (text: string, type: 'cmd' | 'script') => {
+    navigator.clipboard.writeText(text);
+    if (type === 'cmd') setCopiedGitCmd(true);
+    if (type === 'script') setCopiedScript(true);
+    onShowToast('Copied to clipboard!');
+    setTimeout(() => {
+      setCopiedGitCmd(false);
+      setCopiedScript(false);
+    }, 2500);
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-md">
       <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-3xl border border-sky-500/30 bg-[#0e172a] p-5 shadow-2xl shadow-black">
@@ -34,8 +51,8 @@ export const AndroidApkModal: React.FC<AndroidApkModalProps> = ({
               <Smartphone className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-base font-extrabold text-white">Android APK Package</h3>
-              <p className="text-xs text-slate-400">Native standalone Android APK distribution</p>
+              <h3 className="text-base font-extrabold text-white">Android APK & GitHub CI/CD</h3>
+              <p className="text-xs text-slate-400">Native Android project & automated build YAML</p>
             </div>
           </div>
           <button
@@ -58,6 +75,60 @@ export const AndroidApkModal: React.FC<AndroidApkModalProps> = ({
             <span>Download Android Studio APK Project (.zip)</span>
           </button>
 
+          {/* GitHub Actions YAML Workflow Card */}
+          <div className="rounded-2xl border border-emerald-500/30 bg-emerald-950/20 p-3.5">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="flex items-center gap-1.5 font-bold text-emerald-300">
+                <FileCode2 className="h-4 w-4" />
+                <span>GitHub Actions APK YAML Included</span>
+              </span>
+              <span className="rounded bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-mono font-bold text-emerald-300 border border-emerald-500/40">
+                .github/workflows/build-apk.yml
+              </span>
+            </div>
+            <p className="text-slate-300 leading-relaxed text-[11px]">
+              Every commit pushed to GitHub automatically triggers the workflow to compile both{' '}
+              <strong className="text-white">Debug & Release APKs</strong> and attaches them directly as
+              downloadable artifacts on GitHub!
+            </p>
+          </div>
+
+          {/* Push to GitHub Commands */}
+          <div className="flex flex-col gap-2 rounded-2xl border border-slate-800 bg-[#070d18] p-3.5">
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-1.5 font-bold text-white">
+                <GitBranch className="h-4 w-4 text-sky-400" />
+                <span>Push to Your GitHub Repository:</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => copyToClipboard(gitPushCmd, 'cmd')}
+                className="flex items-center gap-1 text-[11px] font-bold text-sky-400 hover:text-sky-300"
+              >
+                {copiedGitCmd ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                <span>{copiedGitCmd ? 'Copied' : 'Copy'}</span>
+              </button>
+            </div>
+
+            <pre className="rounded-xl bg-slate-900/90 p-2.5 font-mono text-[10px] text-slate-200 overflow-x-auto border border-slate-800 whitespace-pre-wrap select-all">
+              {gitPushCmd}
+            </pre>
+
+            <div className="mt-1 flex items-center justify-between text-[11px] text-slate-400">
+              <span>Or run the helper script in terminal:</span>
+              <button
+                type="button"
+                onClick={() => copyToClipboard(helperScriptCmd, 'script')}
+                className="font-bold text-sky-400 hover:underline"
+              >
+                {copiedScript ? 'Copied script' : 'Copy script cmd'}
+              </button>
+            </div>
+            <code className="rounded-lg bg-black/40 p-1.5 font-mono text-[10px] text-sky-300 overflow-x-auto select-all">
+              {helperScriptCmd}
+            </code>
+          </div>
+
           {/* Feature Highlights */}
           <div className="grid grid-cols-2 gap-2 text-slate-300">
             <div className="rounded-xl border border-slate-800 bg-[#070d18] p-2.5">
@@ -67,51 +138,6 @@ export const AndroidApkModal: React.FC<AndroidApkModalProps> = ({
             <div className="rounded-xl border border-slate-800 bg-[#070d18] p-2.5">
               <div className="text-[10px] font-bold uppercase text-slate-400">Signing Consistency</div>
               <div className="font-mono font-bold text-emerald-400">Verified Keystore</div>
-            </div>
-          </div>
-
-          {/* 3 Simple Ways to Build the APK */}
-          <div className="flex flex-col gap-2 rounded-2xl border border-slate-800 bg-[#070d18] p-3.5">
-            <div className="flex items-center gap-1.5 font-bold text-white">
-              <Package className="h-4 w-4 text-sky-400" />
-              <span>How to Build your APK:</span>
-            </div>
-
-            <div className="mt-1 flex flex-col gap-2 text-slate-300 leading-relaxed">
-              <div className="flex items-start gap-2">
-                <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-sky-500/20 text-[10px] font-bold text-sky-400">
-                  1
-                </span>
-                <div>
-                  <strong className="text-white">Android Studio:</strong> Unzip the download, click{' '}
-                  <em>Open Project</em>, select the <code className="text-sky-300">android/</code> folder,
-                  and click <em>Build &gt; Build APK(s)</em>.
-                </div>
-              </div>
-
-              <div className="flex items-start gap-2">
-                <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-sky-500/20 text-[10px] font-bold text-sky-400">
-                  2
-                </span>
-                <div>
-                  <strong className="text-white">Gradle CLI:</strong> Run{' '}
-                  <code className="rounded bg-slate-900 px-1 py-0.5 text-sky-300">
-                    ./gradlew assembleDebug
-                  </code>{' '}
-                  in the project directory.
-                </div>
-              </div>
-
-              <div className="flex items-start gap-2">
-                <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-sky-500/20 text-[10px] font-bold text-sky-400">
-                  3
-                </span>
-                <div>
-                  <strong className="text-white">Direct on Phone (WebAPK / Standalone):</strong> Tap{' '}
-                  <em>"Install"</em> in the top header to run as a full screen native app on Android
-                  instantly with zero installation barriers!
-                </div>
-              </div>
             </div>
           </div>
         </div>

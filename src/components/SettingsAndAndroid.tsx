@@ -15,6 +15,10 @@ import {
   Plus,
   X,
   Package,
+  Pencil,
+  Sparkles,
+  GitBranch,
+  FileCode2,
 } from 'lucide-react';
 import { AppSettings, FilterCycle, FilterEntry } from '../types';
 import { CANONICAL_ANDROID_SIGNING } from '../services/storage';
@@ -47,16 +51,36 @@ export const SettingsAndAndroid: React.FC<SettingsAndAndroidProps> = ({
   onShowToast,
 }) => {
   const [copiedKey, setCopiedKey] = useState(false);
+  const [copiedGitCmd, setCopiedGitCmd] = useState(false);
+  const [appNameInput, setAppNameInput] = useState(settings.appName || 'FilterTap');
   const [newPersonInput, setNewPersonInput] = useState('');
+  const [editingPerson, setEditingPerson] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const keytoolCommand = `keytool -genkeypair -v -keystore filtertap-release.keystore -alias filtertap-release-key -keyalg RSA -keysize 4096 -validity 10000 -dname "CN=FilterTap, OU=App, O=FilterTap, C=US"`;
+  const gitPushCommand = `git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git\ngit branch -M main\ngit push -u origin main`;
 
   const copyKeytoolCommand = () => {
     navigator.clipboard.writeText(keytoolCommand);
     setCopiedKey(true);
     onShowToast('Keytool command copied to clipboard!');
     setTimeout(() => setCopiedKey(false), 2500);
+  };
+
+  const copyGitCommand = () => {
+    navigator.clipboard.writeText(gitPushCommand);
+    setCopiedGitCmd(true);
+    onShowToast('Git push command copied to clipboard!');
+    setTimeout(() => setCopiedGitCmd(false), 2500);
+  };
+
+  const handleSaveAppName = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (appNameInput.trim()) {
+      onUpdateSettings({ ...settings, appName: appNameInput.trim() });
+      onShowToast(`App name updated to "${appNameInput.trim()}"!`);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,6 +103,17 @@ export const SettingsAndAndroid: React.FC<SettingsAndAndroidProps> = ({
     onUpdateSettings({ ...settings, savedPeople: updated });
     setNewPersonInput('');
     onShowToast(`Added ${trimmed} to water bringers.`);
+  };
+
+  const handleSaveRenamePerson = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPerson || !renameValue.trim()) return;
+    const newName = renameValue.trim();
+    const updated = settings.savedPeople.map((p) => (p === editingPerson ? newName : p));
+    const newLast = settings.lastSelectedPerson === editingPerson ? newName : settings.lastSelectedPerson;
+    onUpdateSettings({ ...settings, savedPeople: updated, lastSelectedPerson: newLast });
+    setEditingPerson(null);
+    onShowToast(`Renamed ${editingPerson} to ${newName}.`);
   };
 
   const handleRemovePerson = (personName: string) => {
@@ -104,25 +139,102 @@ export const SettingsAndAndroid: React.FC<SettingsAndAndroidProps> = ({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Native Android APK Distribution Card */}
+      {/* Customizable App / Station Name */}
+      <div className="rounded-3xl border border-sky-500/25 bg-[#0c1424]/90 p-4 shadow-xl backdrop-blur-md">
+        <div className="flex items-center gap-2">
+          <Pencil className="h-5 w-5 text-sky-400" />
+          <h3 className="text-sm font-extrabold text-white">Customize Station & App Name</h3>
+        </div>
+        <p className="mt-1 text-xs text-slate-400">
+          Personalize the header name for your household filter, pitcher, or office water station.
+        </p>
+
+        <form onSubmit={handleSaveAppName} className="mt-3 flex gap-2">
+          <input
+            type="text"
+            value={appNameInput}
+            onChange={(e) => setAppNameInput(e.target.value)}
+            placeholder="e.g. Kitchen Brita, Home RO Station..."
+            className="flex-1 rounded-2xl border border-slate-700 bg-[#070d18] px-3.5 py-2 text-xs font-bold text-white focus:border-sky-500 focus:outline-none"
+          />
+          <button
+            type="submit"
+            className="flex items-center gap-1 rounded-2xl bg-gradient-to-r from-sky-600 to-blue-600 px-4 py-2 text-xs font-bold text-white shadow-md hover:brightness-110 active:scale-95"
+          >
+            <Check className="h-3.5 w-3.5" />
+            <span>Save Name</span>
+          </button>
+        </form>
+
+        {/* Quick Name Presets */}
+        <div className="mt-2.5 flex flex-wrap gap-1.5">
+          {['FilterTap', 'Kitchen Brita', 'Under-Sink RO', 'Office Cooler', 'Berkey Gravity'].map(
+            (preset) => (
+              <button
+                key={preset}
+                type="button"
+                onClick={() => {
+                  setAppNameInput(preset);
+                  onUpdateSettings({ ...settings, appName: preset });
+                  onShowToast(`Name set to "${preset}"`);
+                }}
+                className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition ${
+                  settings.appName === preset
+                    ? 'bg-sky-500/20 text-sky-300 border border-sky-400/40'
+                    : 'bg-slate-800/80 text-slate-400 hover:text-white'
+                }`}
+              >
+                {preset}
+              </button>
+            )
+          )}
+        </div>
+      </div>
+
+      {/* GitHub Actions CI/CD Workflow & Push Card */}
       <div className="rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-[#0c1a2e] to-[#091524] p-4 shadow-xl shadow-emerald-950/20">
         <div className="flex items-start gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-sky-600 text-white shadow-md shadow-emerald-500/30">
-            <Smartphone className="h-6 w-6" />
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/30">
+            <GitBranch className="h-6 w-6" />
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-extrabold text-white">
-                Native Android APK Distribution
+                GitHub CI/CD & APK Build YAML
               </h3>
-              <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[9px] font-black uppercase text-emerald-400 border border-emerald-500/30">
-                APK Native
+              <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[9px] font-mono font-bold uppercase text-emerald-400 border border-emerald-500/30">
+                YAML Included
               </span>
             </div>
             <p className="mt-1 text-xs text-slate-300 leading-relaxed">
-              Complete, self-contained Android project pre-configured with Capacitor, AndroidManifest,
-              and Gradle to build a standalone APK or AAB.
+              Workflow file <code className="text-emerald-300">.github/workflows/build-apk.yml</code>{' '}
+              is configured in this repository. Push to your GitHub repo to trigger automatic APK compilation!
             </p>
+          </div>
+        </div>
+
+        {/* Push Command Code Box */}
+        <div className="mt-3.5 space-y-2 rounded-2xl bg-[#070d18] p-3 text-xs">
+          <div className="flex justify-between items-center pb-1 border-b border-slate-800">
+            <span className="text-[11px] font-bold text-slate-300 flex items-center gap-1.5">
+              <FileCode2 className="h-3.5 w-3.5 text-emerald-400" />
+              <span>Push to GitHub & Auto-Build APK:</span>
+            </span>
+            <button
+              type="button"
+              onClick={copyGitCommand}
+              className="flex items-center gap-1 text-[11px] font-bold text-emerald-400 hover:text-emerald-300"
+            >
+              {copiedGitCmd ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+              <span>{copiedGitCmd ? 'Copied' : 'Copy'}</span>
+            </button>
+          </div>
+
+          <pre className="rounded-xl bg-slate-900/90 p-2 font-mono text-[10px] text-emerald-300 overflow-x-auto select-all whitespace-pre-wrap">
+            {gitPushCommand}
+          </pre>
+          <div className="text-[10px] text-slate-400">
+            Or run script: <code className="text-sky-300">./scripts/push-to-github.sh &lt;repo-url&gt;</code>
           </div>
         </div>
 
@@ -141,9 +253,107 @@ export const SettingsAndAndroid: React.FC<SettingsAndAndroidProps> = ({
             className="flex items-center justify-center gap-1.5 rounded-2xl border border-slate-700 bg-slate-800/90 py-2.5 text-xs font-bold text-slate-200 transition active:scale-95 hover:bg-slate-700"
           >
             <Package className="h-4 w-4 text-emerald-400" />
-            <span>Build Instructions</span>
+            <span>APK & YAML Details</span>
           </button>
         </div>
+      </div>
+
+      {/* Household / People Manager with Rename Support */}
+      <div className="rounded-3xl border border-slate-800 bg-[#0c1424]/90 p-4 backdrop-blur-md">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Users className="h-5 w-5 text-sky-400" />
+            <h3 className="text-sm font-extrabold text-white">Household Water Bringers</h3>
+          </div>
+          <span className="text-xs text-slate-400">
+            {settings.savedPeople.length} People
+          </span>
+        </div>
+        <p className="mt-1 text-xs text-slate-400">
+          Customize member names or add family and roommates who bring water.
+        </p>
+
+        {/* People list chips */}
+        <div className="mt-3 flex flex-wrap gap-2">
+          {settings.savedPeople.map((person) => {
+            if (editingPerson === person) {
+              return (
+                <form
+                  key={person}
+                  onSubmit={handleSaveRenamePerson}
+                  className="flex items-center gap-1 rounded-full border border-sky-400 bg-slate-900 p-0.5"
+                >
+                  <input
+                    type="text"
+                    autoFocus
+                    value={renameValue}
+                    onChange={(e) => setRenameValue(e.target.value)}
+                    className="w-20 rounded-full bg-transparent px-2.5 py-0.5 text-xs text-white focus:outline-none"
+                  />
+                  <button
+                    type="submit"
+                    className="rounded-full bg-sky-600 p-1 text-white hover:bg-sky-500"
+                  >
+                    <Check className="h-3 w-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingPerson(null)}
+                    className="rounded-full bg-slate-800 p-1 text-slate-400"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </form>
+              );
+            }
+
+            return (
+              <div
+                key={person}
+                className="flex items-center gap-1.5 rounded-full border border-slate-700 bg-[#070d18] px-3 py-1 text-xs font-bold text-white shadow-sm"
+              >
+                <span>{person}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingPerson(person);
+                    setRenameValue(person);
+                  }}
+                  className="text-slate-400 hover:text-sky-300"
+                  title={`Rename ${person}`}
+                >
+                  <Pencil className="h-3 w-3" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleRemovePerson(person)}
+                  className="text-slate-400 hover:text-red-400"
+                  title={`Remove ${person}`}
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Add Person form */}
+        <form onSubmit={handleAddPerson} className="mt-3 flex gap-2">
+          <input
+            type="text"
+            value={newPersonInput}
+            onChange={(e) => setNewPersonInput(e.target.value)}
+            placeholder="Add new person (e.g. Sister, Roommate)..."
+            className="flex-1 rounded-2xl border border-slate-700 bg-[#070d18] px-3.5 py-2 text-xs text-white focus:border-sky-500 focus:outline-none"
+          />
+          <button
+            type="submit"
+            className="flex items-center gap-1 rounded-2xl bg-sky-600 px-3.5 py-2 text-xs font-bold text-white shadow-md hover:bg-sky-500 active:scale-95"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            <span>Add</span>
+          </button>
+        </form>
       </div>
 
       {/* Android Release Key & Update Consistency Section */}
@@ -216,60 +426,6 @@ export const SettingsAndAndroid: React.FC<SettingsAndAndroidProps> = ({
             <span>Gradle Config</span>
           </button>
         </div>
-      </div>
-
-      {/* Household / People Manager */}
-      <div className="rounded-3xl border border-slate-800 bg-[#0c1424]/90 p-4 backdrop-blur-md">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-sky-400" />
-            <h3 className="text-sm font-extrabold text-white">Household Water Bringers</h3>
-          </div>
-          <span className="text-xs text-slate-400">
-            {settings.savedPeople.length} People
-          </span>
-        </div>
-        <p className="mt-1 text-xs text-slate-400">
-          Manage family members or roommates who bring water to the filter.
-        </p>
-
-        {/* People list chips */}
-        <div className="mt-3 flex flex-wrap gap-2">
-          {settings.savedPeople.map((person) => (
-            <div
-              key={person}
-              className="flex items-center gap-1.5 rounded-full border border-slate-700 bg-[#070d18] px-3 py-1 text-xs font-bold text-white shadow-sm"
-            >
-              <span>{person}</span>
-              <button
-                type="button"
-                onClick={() => handleRemovePerson(person)}
-                className="text-slate-400 hover:text-red-400"
-                title={`Remove ${person}`}
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </div>
-          ))}
-        </div>
-
-        {/* Add Person form */}
-        <form onSubmit={handleAddPerson} className="mt-3 flex gap-2">
-          <input
-            type="text"
-            value={newPersonInput}
-            onChange={(e) => setNewPersonInput(e.target.value)}
-            placeholder="Add new person (e.g. Sister, Roommate)..."
-            className="flex-1 rounded-2xl border border-slate-700 bg-[#070d18] px-3.5 py-2 text-xs text-white focus:border-sky-500 focus:outline-none"
-          />
-          <button
-            type="submit"
-            className="flex items-center gap-1 rounded-2xl bg-sky-600 px-3.5 py-2 text-xs font-bold text-white shadow-md hover:bg-sky-500 active:scale-95"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            <span>Add</span>
-          </button>
-        </form>
       </div>
 
       {/* Local-Only Privacy Guarantee */}

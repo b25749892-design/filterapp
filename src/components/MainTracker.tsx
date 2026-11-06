@@ -17,6 +17,7 @@ interface MainTrackerProps {
   selectedPerson: string;
   onSelectPerson: (person: string) => void;
   onAddPerson: (newPerson: string) => void;
+  onRenamePerson?: (oldName: string, newName: string) => void;
   onLogVolume: (volume: number, note?: string, person?: string) => void;
   onUndoLastTap: () => void;
   onOpenResetModal: () => void;
@@ -35,6 +36,7 @@ export const MainTracker: React.FC<MainTrackerProps> = ({
   selectedPerson,
   onSelectPerson,
   onAddPerson,
+  onRenamePerson,
   onLogVolume,
   onUndoLastTap,
   onOpenResetModal,
@@ -189,6 +191,7 @@ export const MainTracker: React.FC<MainTrackerProps> = ({
         selectedPerson={selectedPerson}
         onSelectPerson={onSelectPerson}
         onAddPerson={onAddPerson}
+        onRenamePerson={onRenamePerson}
       />
 
       {/* Big Action Button (One Big Thumb Button) with Ripple */}
