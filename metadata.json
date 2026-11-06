@@ -1,0 +1,6 @@
+{
+  "name": "FilterTap - Water Filter Tracker",
+  "description": "Local-only water filter life tracker with retroactive entry adjustment, cycle date resetting, offline PWA support, and Android release key consistency.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
