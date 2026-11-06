@@ -69,8 +69,12 @@ jobs:
           java-version: '21'
           cache: 'gradle'
 
-      - name: 7. Set up Android SDK
-        uses: android-actions/setup-android@v3
+      - name: 7. Accept Android SDK Licenses and Install Platform
+        run: |
+          SDKM=$(ls -d "$ANDROID_HOME"/cmdline-tools/*/bin/sdkmanager | head -n 1)
+          yes | "$SDKM" --licenses > /dev/null || true
+          "$SDKM" "platforms;android-36" "build-tools;36.0.0" "platform-tools" > /dev/null
+          echo "SDK ready at $ANDROID_HOME"
 
       - name: 8. Restore Release Keystore
         working-directory: android
