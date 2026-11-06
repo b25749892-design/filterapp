@@ -23,4 +23,4 @@ echo "Remote set to $REPO_URL"
 echo "Pushing main branch to GitHub..."
 git push -u origin main
 
-echo "Successfully pushed to GitHub! Check the 'Actions' tab on GitHub to see your Android APK building automatically."
+echo "Successfully pushed to GitHub! The APK build does NOT start on push. Run it manually from the 'Actions' tab (Build and Release Android APK -> Run workflow)."

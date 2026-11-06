@@ -16,8 +16,22 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            def ksFile = file('filtertap-release.keystore')
+            if (ksFile.exists()) {
+                storeFile ksFile
+                storePassword System.getenv('KEYSTORE_PASSWORD') ?: 'filtertap-release-key-pass-2026'
+                keyAlias 'filtertap-release-key'
+                keyPassword System.getenv('KEY_PASSWORD') ?: 'filtertap-release-key-pass-2026'
+            }
+        }
+    }
     buildTypes {
         release {
+            if (file('filtertap-release.keystore').exists()) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
