@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { WifiOff, Download, Smartphone, Pencil, Check, X, GitBranch } from 'lucide-react';
+import { WifiOff, Download, Pencil, Check, X } from 'lucide-react';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 
@@ -9,7 +9,6 @@ interface HeaderProps {
   targetLiters: number;
   onRenameApp: (newName: string) => void;
   onOpenInstallModal: () => void;
-  onOpenApkModal: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -18,7 +17,6 @@ export const Header: React.FC<HeaderProps> = ({
   targetLiters,
   onRenameApp,
   onOpenInstallModal,
-  onOpenApkModal,
 }) => {
   const isOnline = useOnlineStatus();
   const { isInstallable, isInstalled, install } = usePWAInstall();
@@ -120,8 +118,6 @@ export const Header: React.FC<HeaderProps> = ({
             ) : (
               <span className="flex items-center gap-1">
                 <span>100% On-Device</span>
-                <span className="text-slate-600">•</span>
-                <span className="text-emerald-400 font-semibold">APK & CI/CD Ready</span>
               </span>
             )}
           </div>
@@ -129,17 +125,6 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       <div className="flex items-center gap-1.5">
-        {/* Android APK download trigger */}
-        <button
-          onClick={onOpenApkModal}
-          type="button"
-          className="flex items-center gap-1 rounded-full border border-emerald-400/40 bg-emerald-500/15 px-2.5 py-1 text-xs font-bold text-emerald-300 transition active:scale-95 hover:bg-emerald-500/25"
-          title="Download APK package or inspect GitHub CI/CD"
-        >
-          <Smartphone className="h-3.5 w-3.5" />
-          <span>APK</span>
-        </button>
-
         {!isInstalled && (
           <button
             onClick={handleInstallClick}

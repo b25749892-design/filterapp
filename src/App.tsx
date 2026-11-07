@@ -8,7 +8,7 @@ import {
   Droplets,
   Layers,
   History,
-  Settings,
+  Settings as SettingsIcon,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AppSettings, FilterCycle, FilterEntry, TabType } from './types';
@@ -17,13 +17,11 @@ import { Header } from './components/Header';
 import { MainTracker } from './components/MainTracker';
 import { EntriesDashboard } from './components/EntriesDashboard';
 import { CycleManager } from './components/CycleManager';
-import { SettingsAndAndroid } from './components/SettingsAndAndroid';
+import { SettingsScreen } from './components/Settings';
 import { ResetFilterModal } from './components/Modals/ResetFilterModal';
 import { EditEntryModal } from './components/Modals/EditEntryModal';
 import { AddPastEntryModal } from './components/Modals/AddPastEntryModal';
 import { EditCycleModal } from './components/Modals/EditCycleModal';
-import { AndroidKeyModal } from './components/Modals/AndroidKeyModal';
-import { AndroidApkModal } from './components/Modals/AndroidApkModal';
 import { InstallGuideModal } from './components/Modals/InstallGuideModal';
 import { Toast } from './components/Toast';
 import { usePWAInstall } from './hooks/usePWAInstall';
@@ -47,8 +45,6 @@ export default function App() {
   const [isAddPastModalOpen, setIsAddPastModalOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<FilterEntry | null>(null);
   const [editingCycle, setEditingCycle] = useState<FilterCycle | null>(null);
-  const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
-  const [isApkModalOpen, setIsApkModalOpen] = useState(false);
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
 
   // Toast state
@@ -85,7 +81,7 @@ export default function App() {
       savedPeople:
         data.settings.savedPeople && data.settings.savedPeople.length > 0
           ? data.settings.savedPeople
-          : ['Me', 'Dad', 'Mom', 'Alex'],
+          : ['Me'],
       lastSelectedPerson: data.settings.lastSelectedPerson || 'Me',
     };
     setSettings(safeSettings);
@@ -412,7 +408,6 @@ export default function App() {
           targetLiters={activeCycle?.targetLiters || 1500}
           onRenameApp={handleRenameApp}
           onOpenInstallModal={() => setIsInstallModalOpen(true)}
-          onOpenApkModal={() => setIsApkModalOpen(true)}
         />
 
         {/* Eye-Soothing Animated Screen Transitions with Motion */}
@@ -494,7 +489,7 @@ export default function App() {
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.22, ease: 'easeOut' }}
               >
-                <SettingsAndAndroid
+                <SettingsScreen
                   settings={settings}
                   cycles={cycles}
                   entries={entries}
@@ -503,8 +498,6 @@ export default function App() {
                   onRestoreBackupFile={handleRestoreBackupFile}
                   onExportCSV={handleExportCSV}
                   onFactoryReset={handleFactoryReset}
-                  onOpenKeyModal={() => setIsKeyModalOpen(true)}
-                  onOpenApkModal={() => setIsApkModalOpen(true)}
                   onShowToast={showToast}
                 />
               </motion.div>
@@ -519,7 +512,7 @@ export default function App() {
           { id: 'tracker', label: 'Tracker', icon: Droplets },
           { id: 'dashboard', label: 'Entries', icon: Layers },
           { id: 'cycles', label: 'Cycles', icon: History },
-          { id: 'settings', label: 'Settings & APK', icon: Settings },
+          { id: 'settings', label: 'Settings', icon: SettingsIcon },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -586,17 +579,7 @@ export default function App() {
         onSave={handleSaveCycleUpdates}
       />
 
-      <AndroidKeyModal
-        isOpen={isKeyModalOpen}
-        onClose={() => setIsKeyModalOpen(false)}
-        onShowToast={showToast}
-      />
 
-      <AndroidApkModal
-        isOpen={isApkModalOpen}
-        onClose={() => setIsApkModalOpen(false)}
-        onShowToast={showToast}
-      />
 
       <InstallGuideModal
         isOpen={isInstallModalOpen}

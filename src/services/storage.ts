@@ -8,29 +8,13 @@ const STORE_ENTRIES = 'entries';
 
 const LOCAL_STORAGE_KEY = 'filtertap_local_cache_v2';
 
-// Canonical Android release signature details ensuring persistent update consistency
-export const CANONICAL_ANDROID_SIGNING = {
-  packageName: 'com.filtertap.app',
-  versionName: '1.4.0',
-  versionCode: 140,
-  keyAlias: 'filtertap-release-key',
-  keyAlgorithm: 'RSA 4096 / SHA256withRSA',
-  keyFingerprintSha256:
-    '7F:B4:92:1C:88:E2:03:6A:9D:44:B1:5E:20:99:34:F1:C8:51:7A:3D:28:9B:4C:6E:81:04:12:DE:33:AA:59:71',
-  keyFingerprintSha1: '4A:D2:78:E1:90:33:C4:F5:6B:19:80:2E:FE:91:D5:AC:3B:88:67:12',
-  appIdentifier: 'com.filtertap.app',
-};
-
 const DEFAULT_SETTINGS: AppSettings = {
   appName: 'FilterTap',
   activeCycleId: 'initial-cycle',
   defaultTargetLiters: 1500,
-  quickAmounts: [1, 2, 5, 10],
   hapticsEnabled: true,
-  waterUnit: 'L',
-  savedPeople: ['Me', 'Dad', 'Mom', 'Alex'],
+  savedPeople: ['Me'],
   lastSelectedPerson: 'Me',
-  androidSigning: CANONICAL_ANDROID_SIGNING,
 };
 
 function getInitialCycle(): FilterCycle {
@@ -144,7 +128,6 @@ class StorageService {
           const finalSettings = {
             ...DEFAULT_SETTINGS,
             ...(settings || {}),
-            androidSigning: CANONICAL_ANDROID_SIGNING,
           };
           this.mirrorToLocalStorage(finalSettings, cycles, entries);
           return { settings: finalSettings, cycles, entries };
@@ -199,7 +182,6 @@ class StorageService {
             settings: {
               ...DEFAULT_SETTINGS,
               ...parsed.settings,
-              androidSigning: CANONICAL_ANDROID_SIGNING,
             },
             cycles: parsed.cycles,
             entries: parsed.entries || [],
@@ -458,7 +440,6 @@ class StorageService {
       const settings: AppSettings = {
         ...DEFAULT_SETTINGS,
         ...(data.settings || {}),
-        androidSigning: CANONICAL_ANDROID_SIGNING,
       };
 
       await this.saveCycles(data.cycles);

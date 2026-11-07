@@ -20,10 +20,10 @@ export default defineConfig(() => {
         ],
         manifest: {
           id: 'com.filtertap.app',
-          name: 'FilterTap - Water Filter Tracker',
+          name: 'FilterTap',
           short_name: 'FilterTap',
           description:
-            'Local-only, privacy-focused water filter life tracker with retroactive entry adjustment and cycle date resetting.',
+            'Track your water filter's life. Everything stays on this device.',
           start_url: '/',
           scope: '/',
           display: 'standalone',

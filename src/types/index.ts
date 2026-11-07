@@ -3,7 +3,7 @@ export interface FilterEntry {
   cycleId: string;
   timestamp: string; // ISO string (e.g. 2026-11-06T13:45:00.000Z)
   volume: number; // in Liters
-  person?: string; // Person who brought / filled the water (e.g. "Dad", "Me", "Sarah")
+  person?: string; // Person who brought / filled the water 
   note?: string;
   source: 'quick_tap' | 'manual_entry' | 'retroactive';
   createdAt: string;
@@ -25,21 +25,9 @@ export interface AppSettings {
   appName: string; // Customizable title / filter station name (e.g. "FilterTap", "Kitchen Brita", "Office RO")
   activeCycleId: string;
   defaultTargetLiters: number;
-  quickAmounts: number[];
   hapticsEnabled: boolean;
-  waterUnit: 'L' | 'gal';
   savedPeople: string[]; // Household / office members who bring water
   lastSelectedPerson: string; // Currently active person for 1-tap logging
-  androidSigning: {
-    packageName: string;
-    versionName: string;
-    versionCode: number;
-    keyAlias: string;
-    keyAlgorithm: string;
-    keyFingerprintSha256: string;
-    keyFingerprintSha1: string;
-    appIdentifier: string;
-  };
 }
 
 export interface FilterTapBackupData {

@@ -127,7 +127,7 @@ export const EditEntryModal: React.FC<EditEntryModalProps> = ({
               type="text"
               value={person}
               onChange={(e) => setPerson(e.target.value)}
-              placeholder="Or enter custom name (e.g. Dad, Alex, Roommate)..."
+              placeholder="Or enter custom name (e.g. a housemate)..."
               className="mt-1.5 w-full rounded-xl border border-slate-700 bg-[#070d18] px-3 py-2 text-xs text-white focus:border-sky-500 focus:outline-none"
             />
           </div>

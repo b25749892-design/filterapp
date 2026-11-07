@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   ShieldCheck,
-  Key,
   HardDrive,
   Download,
   Upload,
@@ -17,13 +16,11 @@ import {
   Package,
   Pencil,
   Sparkles,
-  GitBranch,
   FileCode2,
 } from 'lucide-react';
 import { AppSettings, FilterCycle, FilterEntry } from '../types';
-import { CANONICAL_ANDROID_SIGNING } from '../services/storage';
 
-interface SettingsAndAndroidProps {
+interface SettingsScreenProps {
   settings: AppSettings;
   cycles: FilterCycle[];
   entries: FilterEntry[];
@@ -32,12 +29,10 @@ interface SettingsAndAndroidProps {
   onRestoreBackupFile: (file: File) => void;
   onExportCSV: () => void;
   onFactoryReset: () => void;
-  onOpenKeyModal: () => void;
-  onOpenApkModal: () => void;
   onShowToast: (msg: string) => void;
 }
 
-export const SettingsAndAndroid: React.FC<SettingsAndAndroidProps> = ({
+export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   settings,
   cycles,
   entries,
@@ -46,34 +41,14 @@ export const SettingsAndAndroid: React.FC<SettingsAndAndroidProps> = ({
   onRestoreBackupFile,
   onExportCSV,
   onFactoryReset,
-  onOpenKeyModal,
-  onOpenApkModal,
   onShowToast,
 }) => {
-  const [copiedKey, setCopiedKey] = useState(false);
-  const [copiedGitCmd, setCopiedGitCmd] = useState(false);
   const [appNameInput, setAppNameInput] = useState(settings.appName || 'FilterTap');
   const [newPersonInput, setNewPersonInput] = useState('');
   const [editingPerson, setEditingPerson] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const keytoolCommand = `keytool -genkeypair -v -keystore filtertap-release.keystore -alias filtertap-release-key -keyalg RSA -keysize 4096 -validity 10000 -dname "CN=FilterTap, OU=App, O=FilterTap, C=US"`;
-  const gitPushCommand = `git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git\ngit branch -M main\ngit push -u origin main`;
-
-  const copyKeytoolCommand = () => {
-    navigator.clipboard.writeText(keytoolCommand);
-    setCopiedKey(true);
-    onShowToast('Keytool command copied to clipboard!');
-    setTimeout(() => setCopiedKey(false), 2500);
-  };
-
-  const copyGitCommand = () => {
-    navigator.clipboard.writeText(gitPushCommand);
-    setCopiedGitCmd(true);
-    onShowToast('Git push command copied to clipboard!');
-    setTimeout(() => setCopiedGitCmd(false), 2500);
-  };
 
   const handleSaveAppName = (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,15 +102,6 @@ export const SettingsAndAndroid: React.FC<SettingsAndAndroidProps> = ({
     onShowToast(`Removed ${personName}.`);
   };
 
-  const handleDownloadApkZip = () => {
-    const a = document.createElement('a');
-    a.href = '/FilterTap-Android-APK-Package.zip';
-    a.download = 'FilterTap-Android-APK-Package.zip';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    onShowToast('Downloading FilterTap Android APK Project (.zip)!');
-  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -188,73 +154,6 @@ export const SettingsAndAndroid: React.FC<SettingsAndAndroidProps> = ({
               </button>
             )
           )}
-        </div>
-      </div>
-
-      {/* GitHub Actions CI/CD Workflow & Push Card */}
-      <div className="rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-[#0c1a2e] to-[#091524] p-4 shadow-xl shadow-emerald-950/20">
-        <div className="flex items-start gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/30">
-            <GitBranch className="h-6 w-6" />
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <h3 className="text-sm font-extrabold text-white">
-                GitHub CI/CD & APK Build YAML
-              </h3>
-              <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[9px] font-mono font-bold uppercase text-emerald-400 border border-emerald-500/30">
-                YAML Included
-              </span>
-            </div>
-            <p className="mt-1 text-xs text-slate-300 leading-relaxed">
-              Workflow file <code className="text-emerald-300">.github/workflows/build-apk.yml</code>{' '}
-              is configured in this repository. Push to your GitHub repo to trigger automatic APK compilation!
-            </p>
-          </div>
-        </div>
-
-        {/* Push Command Code Box */}
-        <div className="mt-3.5 space-y-2 rounded-2xl bg-[#070d18] p-3 text-xs">
-          <div className="flex justify-between items-center pb-1 border-b border-slate-800">
-            <span className="text-[11px] font-bold text-slate-300 flex items-center gap-1.5">
-              <FileCode2 className="h-3.5 w-3.5 text-emerald-400" />
-              <span>Push to GitHub & Auto-Build APK:</span>
-            </span>
-            <button
-              type="button"
-              onClick={copyGitCommand}
-              className="flex items-center gap-1 text-[11px] font-bold text-emerald-400 hover:text-emerald-300"
-            >
-              {copiedGitCmd ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-              <span>{copiedGitCmd ? 'Copied' : 'Copy'}</span>
-            </button>
-          </div>
-
-          <pre className="rounded-xl bg-slate-900/90 p-2 font-mono text-[10px] text-emerald-300 overflow-x-auto select-all whitespace-pre-wrap">
-            {gitPushCommand}
-          </pre>
-          <div className="text-[10px] text-slate-400">
-            Or run script: <code className="text-sky-300">./scripts/push-to-github.sh &lt;repo-url&gt;</code>
-          </div>
-        </div>
-
-        <div className="mt-3.5 grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={handleDownloadApkZip}
-            className="flex items-center justify-center gap-1.5 rounded-2xl border border-emerald-400/40 bg-gradient-to-r from-emerald-600 to-sky-600 py-2.5 text-xs font-black text-white shadow-md shadow-emerald-600/30 transition active:scale-95 hover:brightness-110"
-          >
-            <Download className="h-4 w-4" />
-            <span>Download APK Zip</span>
-          </button>
-          <button
-            type="button"
-            onClick={onOpenApkModal}
-            className="flex items-center justify-center gap-1.5 rounded-2xl border border-slate-700 bg-slate-800/90 py-2.5 text-xs font-bold text-slate-200 transition active:scale-95 hover:bg-slate-700"
-          >
-            <Package className="h-4 w-4 text-emerald-400" />
-            <span>APK & YAML Details</span>
-          </button>
         </div>
       </div>
 
@@ -354,78 +253,6 @@ export const SettingsAndAndroid: React.FC<SettingsAndAndroidProps> = ({
             <span>Add</span>
           </button>
         </form>
-      </div>
-
-      {/* Android Release Key & Update Consistency Section */}
-      <div className="rounded-3xl border border-sky-500/30 bg-[#0c1424]/90 p-4 shadow-lg shadow-sky-950/30 backdrop-blur-md">
-        <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-sky-600/30 border border-sky-400/40 text-sky-400">
-            <Key className="h-5 w-5" />
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <h3 className="text-sm font-extrabold text-white">
-                Android Release Key & Update Consistency
-              </h3>
-              <span className="rounded bg-sky-500/20 px-1.5 py-0.5 text-[9px] font-bold text-sky-300 border border-sky-500/30 uppercase">
-                Persistent Key
-              </span>
-            </div>
-            <p className="mt-1 text-xs text-slate-300 leading-relaxed">
-              To update user installations without data loss or APK signature mismatches, Android
-              requires the identical release signing keystore certificate fingerprint across every
-              version update.
-            </p>
-          </div>
-        </div>
-
-        {/* Certificate Details Card */}
-        <div className="mt-3.5 space-y-2 rounded-2xl bg-[#070d18] p-3 text-xs">
-          <div className="flex justify-between items-center py-0.5 border-b border-slate-800">
-            <span className="text-slate-400 font-medium">Package ID</span>
-            <code className="text-sky-300 font-mono font-bold">
-              {CANONICAL_ANDROID_SIGNING.packageName}
-            </code>
-          </div>
-          <div className="flex justify-between items-center py-0.5 border-b border-slate-800">
-            <span className="text-slate-400 font-medium">Version</span>
-            <span className="text-slate-200 font-semibold">
-              {CANONICAL_ANDROID_SIGNING.versionName} (Build {CANONICAL_ANDROID_SIGNING.versionCode})
-            </span>
-          </div>
-          <div className="flex justify-between items-center py-0.5 border-b border-slate-800">
-            <span className="text-slate-400 font-medium">Keystore Alias</span>
-            <code className="text-slate-200 font-mono">{CANONICAL_ANDROID_SIGNING.keyAlias}</code>
-          </div>
-          <div className="py-1">
-            <div className="text-[10px] text-slate-400 font-semibold mb-1">
-              Release SHA-256 Certificate Fingerprint:
-            </div>
-            <div className="rounded-xl bg-slate-900 p-2 font-mono text-[10px] text-emerald-300 break-all select-all border border-slate-800">
-              {CANONICAL_ANDROID_SIGNING.keyFingerprintSha256}
-            </div>
-          </div>
-        </div>
-
-        {/* Action Buttons for Android Key */}
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={copyKeytoolCommand}
-            className="flex items-center justify-center gap-1.5 rounded-2xl border border-sky-400/40 bg-sky-600/30 py-2.5 text-xs font-bold text-sky-200 transition active:scale-95 hover:bg-sky-600/40"
-          >
-            {copiedKey ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-            <span>{copiedKey ? 'Command Copied' : 'Copy Keytool Cmd'}</span>
-          </button>
-          <button
-            type="button"
-            onClick={onOpenKeyModal}
-            className="flex items-center justify-center gap-1.5 rounded-2xl border border-slate-700 bg-slate-800/80 py-2.5 text-xs font-bold text-slate-200 transition active:scale-95 hover:bg-slate-700"
-          >
-            <Smartphone className="h-3.5 w-3.5 text-sky-400" />
-            <span>Gradle Config</span>
-          </button>
-        </div>
       </div>
 
       {/* Local-Only Privacy Guarantee */}
