@@ -15,7 +15,7 @@ capacity is used, and replace the filter when it's due.
 
 Tablet layout: ![Tracker on tablet](docs/screenshots/tracker_tablet.png)
 
-Screenshots are rendered from the real screens by the **Screenshots** workflow (`./gradlew recordPaparazziDebug`).
+Screenshots are rendered from the real screens by the **Screenshots** workflow (`./gradlew recordRoborazziDebug`).
 
 ## Responsive layout
 

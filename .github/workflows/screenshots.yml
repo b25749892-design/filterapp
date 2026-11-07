@@ -1,6 +1,6 @@
 name: Screenshots
 
-# Manual only. Renders the real screens with Paparazzi (no emulator) and commits PNGs to docs/screenshots.
+# Manual only. Renders the real screens with Roborazzi on the JVM (no emulator) and commits PNGs to docs/screenshots.
 on:
   workflow_dispatch:
 
@@ -31,21 +31,13 @@ jobs:
       - name: 4. Record screenshots
         run: |
           chmod +x gradlew
-          ./gradlew recordPaparazziDebug --no-daemon --stacktrace
+          ./gradlew recordRoborazziDebug --no-daemon --stacktrace
 
-      - name: 5. Copy screenshots into docs
-        run: |
-          mkdir -p docs/screenshots
-          for f in app/src/test/snapshots/images/*.png; do
-            name=$(basename "$f" | sed 's/^com\.filtertap\.app_ScreenshotTest_//')
-            cp "$f" "docs/screenshots/$name"
-          done
-          ls -l docs/screenshots
-
-      - name: 6. Commit screenshots
+      - name: 5. Commit screenshots
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mkdir -p docs/screenshots
           git add docs/screenshots
           if git diff --cached --quiet; then
             echo "No screenshot changes."

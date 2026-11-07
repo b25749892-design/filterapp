@@ -5,8 +5,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import app.cash.paparazzi.DeviceConfig
-import app.cash.paparazzi.Paparazzi
+import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onRoot
+import com.github.takahirom.roborazzi.captureRoboImage
 import com.filtertap.app.domain.Cycle
 import com.filtertap.app.domain.Entry
 import com.filtertap.app.domain.Settings
@@ -20,18 +21,21 @@ import com.filtertap.app.ui.screens.TrackerScreen
 import com.filtertap.app.ui.theme.FilterTapTheme
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 
 /**
- * Renders the real screens with fixed sample data. Run `./gradlew recordPaparazziDebug`
- * to write PNGs to app/src/test/snapshots/images. The screenshots workflow copies them to docs/screenshots.
+ * Renders the real screens with sample data and writes PNGs to docs/screenshots.
+ * Run with: ./gradlew recordRoborazziDebug
  */
+@RunWith(RobolectricTestRunner::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 class ScreenshotTest {
 
     @get:Rule
-    val phone = Paparazzi(deviceConfig = DeviceConfig.PIXEL_5)
-
-    @get:Rule
-    val tablet = Paparazzi(deviceConfig = DeviceConfig.NEXUS_10)
+    val rule = createComposeRule()
 
     private val day = 86_400_000L
     private val now = System.currentTimeMillis()
@@ -58,33 +62,39 @@ class ScreenshotTest {
         ),
     )
 
-    private fun shot(paparazzi: Paparazzi, name: String, content: @Composable () -> Unit) {
-        paparazzi.snapshot(name = name) {
+    private fun shot(path: String, content: @Composable () -> Unit) {
+        rule.setContent {
             FilterTapTheme {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     content()
                 }
             }
         }
+        rule.onRoot().captureRoboImage("../docs/screenshots/$path.png")
     }
 
-    @Test fun tracker() = shot(phone, "tracker") {
+    @Config(qualifiers = "w411dp-h891dp-xxhdpi")
+    @Test fun tracker() = shot("tracker") {
         TrackerScreen(sample, {}, {}, {}, {}, {}, {})
     }
 
-    @Test fun entries() = shot(phone, "entries") {
+    @Config(qualifiers = "w411dp-h891dp-xxhdpi")
+    @Test fun entries() = shot("entries") {
         EntriesScreen(sample, {}, {})
     }
 
-    @Test fun filters() = shot(phone, "filters") {
+    @Config(qualifiers = "w411dp-h891dp-xxhdpi")
+    @Test fun filters() = shot("filters") {
         FiltersScreen(sample, {}, { _, _, _, _ -> })
     }
 
-    @Test fun settings() = shot(phone, "settings") {
+    @Config(qualifiers = "w411dp-h891dp-xxhdpi")
+    @Test fun settings() = shot("settings") {
         SettingsScreen(sample, {}, {}, {}, {}, {}, { _, _ -> }, {}, {}, {}, {}, {})
     }
 
-    @Test fun tracker_tablet() = shot(tablet, "tracker_tablet") {
+    @Config(qualifiers = "w1280dp-h800dp-xhdpi")
+    @Test fun tracker_tablet() = shot("tracker_tablet") {
         TrackerScreen(sample, {}, {}, {}, {}, {}, {})
     }
 }
