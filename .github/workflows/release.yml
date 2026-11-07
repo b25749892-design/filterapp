@@ -1,0 +1,93 @@
+name: Release APK
+
+# Manual only. Pushes and pull requests never start a build.
+on:
+  workflow_dispatch:
+    inputs:
+      releaseTag:
+        description: 'Release tag, for example v2.0.0'
+        required: true
+        default: 'v2.0.0'
+        type: string
+      createRelease:
+        description: 'Publish a GitHub Release with the signed APK attached'
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build signed APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    env:
+      KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+      KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+      KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+      VERSION_NAME: ${{ inputs.releaseTag }}
+
+    steps:
+      - name: 1. Checkout
+        uses: actions/checkout@v4
+
+      - name: 2. Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: 3. Install Android platform and accept SDK licences
+        run: |
+          SDKM=$(ls -d "$ANDROID_HOME"/cmdline-tools/*/bin/sdkmanager | head -n 1)
+          yes | "$SDKM" --licenses > /dev/null || true
+          "$SDKM" "platforms;android-35" "build-tools;35.0.0" > /dev/null
+
+      - name: 4. Restore signing key from secrets
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEYSTORE_PASSWORD" ] || [ -z "$KEY_PASSWORD" ]; then
+            echo "::error::Missing signing secret (KEYSTORE_BASE64, KEYSTORE_PASSWORD or KEY_PASSWORD)."
+            exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.keystore"
+          echo "KEYSTORE_PATH=$RUNNER_TEMP/release.keystore" >> "$GITHUB_ENV"
+
+      - name: 5. Build release APK
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon --stacktrace
+
+      - name: 6. Collect APK
+        id: apk
+        run: |
+          SRC=app/build/outputs/apk/release/app-release.apk
+          if [ ! -f "$SRC" ]; then
+            echo "::error::Signed release APK was not produced."
+            exit 1
+          fi
+          OUT="FilterTap-${VERSION_NAME}.apk"
+          cp "$SRC" "$OUT"
+          echo "apk=$OUT" >> "$GITHUB_OUTPUT"
+          ls -lh "$OUT"
+
+      - name: 7. Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: FilterTap-${{ inputs.releaseTag }}
+          path: ${{ steps.apk.outputs.apk }}
+          if-no-files-found: error
+
+      - name: 8. Publish GitHub Release
+        if: inputs.createRelease
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.releaseTag }}
+          name: FilterTap ${{ inputs.releaseTag }}
+          files: ${{ steps.apk.outputs.apk }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
