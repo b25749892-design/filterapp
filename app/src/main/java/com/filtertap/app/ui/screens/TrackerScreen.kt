@@ -1,6 +1,8 @@
 package com.filtertap.app.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -8,22 +10,24 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
 import com.filtertap.app.domain.Entry
 import com.filtertap.app.domain.cycleStats
 import com.filtertap.app.ui.AppState
-import com.filtertap.app.ui.fmtAmount
-import com.filtertap.app.ui.fmtLiters
+import com.filtertap.app.ui.components.DropTile
 import com.filtertap.app.ui.components.EmptyHint
 import com.filtertap.app.ui.components.EntryRow
 import com.filtertap.app.ui.components.Gauge
@@ -31,17 +35,16 @@ import com.filtertap.app.ui.components.PersonChips
 import com.filtertap.app.ui.components.SectionLabel
 import com.filtertap.app.ui.components.StatBlock
 import com.filtertap.app.ui.components.StatusPill
-import com.filtertap.app.ui.components.SurfaceCard
 import com.filtertap.app.ui.components.TextPromptDialog
+import com.filtertap.app.ui.components.WaveLine
 import com.filtertap.app.ui.components.rememberTap
 import com.filtertap.app.domain.nameError
+import com.filtertap.app.ui.fmtAmount
+import com.filtertap.app.ui.fmtLiters
 import com.filtertap.app.ui.nowMillis
 import com.filtertap.app.ui.toLocalDate
 import com.filtertap.app.ui.zone
-import androidx.compose.material3.HorizontalDivider
 import java.time.LocalDate
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 
 @Composable
 fun TrackerScreen(
@@ -87,13 +90,25 @@ fun TrackerScreen(
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onSurface,
             )
+            WaveLine(modifier = Modifier.padding(top = 4.dp))
         }
 
-        SurfaceCard {
+        // Gradient card: the gauge sits on a soft teal wash.
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(MaterialTheme.shapes.large)
+                .background(
+                    Brush.verticalGradient(
+                        listOf(MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.surface),
+                    ),
+                )
+                .padding(horizontal = 20.dp, vertical = 24.dp),
+        ) {
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp),
             ) {
                 Gauge(
                     fraction = stats.fraction,
@@ -131,15 +146,14 @@ fun TrackerScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 state.settings.quickAmounts.forEach { amount ->
-                    FilledTonalButton(
+                    DropTile(
+                        label = fmtAmount(amount) + " L",
                         onClick = {
                             tap()
                             onLogQuick(amount)
                         },
                         modifier = Modifier.weight(1f),
-                    ) {
-                        Text(fmtAmount(amount) + " L", fontWeight = FontWeight.Medium)
-                    }
+                    )
                 }
             }
             OutlinedButton(onClick = onOtherAmount, modifier = Modifier.fillMaxWidth()) {
