@@ -23,7 +23,7 @@ export default defineConfig(() => {
           name: 'FilterTap',
           short_name: 'FilterTap',
           description:
-            'Track your water filter's life. Everything stays on this device.',
+            "Track your water filter's life. Everything stays on this device.",
           start_url: '/',
           scope: '/',
           display: 'standalone',
