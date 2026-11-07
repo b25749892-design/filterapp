@@ -31,7 +31,7 @@ class ScreenshotTest {
     val phone = Paparazzi(deviceConfig = DeviceConfig.PIXEL_5)
 
     @get:Rule
-    val tablet = Paparazzi(deviceConfig = DeviceConfig.PIXEL_TABLET)
+    val tablet = Paparazzi(deviceConfig = DeviceConfig.NEXUS_10)
 
     private val day = 86_400_000L
     private val now = System.currentTimeMillis()
