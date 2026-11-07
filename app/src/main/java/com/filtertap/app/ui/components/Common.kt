@@ -1,6 +1,7 @@
 package com.filtertap.app.ui.components
 
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
@@ -224,7 +225,7 @@ fun Gauge(
         animationSpec = tween(durationMillis = 900),
         label = "level",
     )
-    val phase by rememberInfiniteTransition(label = "wave").animateFloat(
+    val phase: Float by rememberInfiniteTransition(label = "wave").animateFloat(
         initialValue = 0f,
         targetValue = (2 * PI).toFloat(),
         animationSpec = infiniteRepeatable(animation = tween(durationMillis = 2800, easing = LinearEasing)),
